@@ -1,0 +1,12 @@
+build:
+	#protoc -I. --go_out=plugins=grpc:. proto/demo/demo.proto
+	protoc --proto_path=. --micro_out=. --go_out=. proto/demo/demo.proto
+	docker build -t laracom-demo-service .
+run:
+	docker run -d -p 9091:9091 -e MICRO_SERVER_ADDRESS=:9091 -e MICRO_REGISTRY=mdns --name=laracom-demo-service laracom-demo-service
+start:
+	docker start laracom-demo-service
+restart:
+	docker restart laracom-demo-service
+stop:
+	docker stop laracom-demo-service
