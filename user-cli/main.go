@@ -42,8 +42,8 @@ func main() {
 			log.Println("参数:", name, email, password)
 
 			// 调用用户认证服务
-			var token *pb.Token
-			token, err = client.Auth(context.TODO(), &pb.User{
+			//var token *pb.Token
+			token, err := client.Auth(context.TODO(), &pb.User{
 				Email:    email,
 				Password: password,
 			})

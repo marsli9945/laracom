@@ -11,9 +11,21 @@ func CreateConnection() (*gorm.DB, error) {
 
 	// 从系统环境变量获取数据库信息
 	host := os.Getenv("DB_HOST")
+	if host == "" {
+		host = "127.0.0.1:3307"
+	}
 	user := os.Getenv("DB_USER")
+	if user == "" {
+		user = "test"
+	}
 	DBName := os.Getenv("DB_NAME")
+	if DBName == "" {
+		DBName = "laracom_user"
+	}
 	password := os.Getenv("DB_PASSWORD")
+	if password == "" {
+		password = "test"
+	}
 
 	return gorm.Open(
 		"mysql",
