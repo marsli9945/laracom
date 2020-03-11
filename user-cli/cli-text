@@ -1,1 +1,2 @@
 go mod edit -replace=github.com/marsli9945/laracom/user-service=/Users/tuyou/mywork/laracom/user-service
+docker-compose run laracom-user-cli --name="test" --email="test@xueyuanjun.com" --password="123456"

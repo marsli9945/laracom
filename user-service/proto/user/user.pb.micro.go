@@ -37,6 +37,8 @@ type UserService interface {
 	Create(ctx context.Context, in *User, opts ...client.CallOption) (*Response, error)
 	Get(ctx context.Context, in *User, opts ...client.CallOption) (*Response, error)
 	GetAll(ctx context.Context, in *Request, opts ...client.CallOption) (*Response, error)
+	Auth(ctx context.Context, in *User, opts ...client.CallOption) (*Token, error)
+	ValidateToken(ctx context.Context, in *Token, opts ...client.CallOption) (*Token, error)
 }
 
 type userService struct {
@@ -87,12 +89,34 @@ func (c *userService) GetAll(ctx context.Context, in *Request, opts ...client.Ca
 	return out, nil
 }
 
+func (c *userService) Auth(ctx context.Context, in *User, opts ...client.CallOption) (*Token, error) {
+	req := c.c.NewRequest(c.name, "UserService.Auth", in)
+	out := new(Token)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userService) ValidateToken(ctx context.Context, in *Token, opts ...client.CallOption) (*Token, error) {
+	req := c.c.NewRequest(c.name, "UserService.ValidateToken", in)
+	out := new(Token)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for UserService service
 
 type UserServiceHandler interface {
 	Create(context.Context, *User, *Response) error
 	Get(context.Context, *User, *Response) error
 	GetAll(context.Context, *Request, *Response) error
+	Auth(context.Context, *User, *Token) error
+	ValidateToken(context.Context, *Token, *Token) error
 }
 
 func RegisterUserServiceHandler(s server.Server, hdlr UserServiceHandler, opts ...server.HandlerOption) error {
@@ -100,6 +124,8 @@ func RegisterUserServiceHandler(s server.Server, hdlr UserServiceHandler, opts .
 		Create(ctx context.Context, in *User, out *Response) error
 		Get(ctx context.Context, in *User, out *Response) error
 		GetAll(ctx context.Context, in *Request, out *Response) error
+		Auth(ctx context.Context, in *User, out *Token) error
+		ValidateToken(ctx context.Context, in *Token, out *Token) error
 	}
 	type UserService struct {
 		userService
@@ -122,4 +148,12 @@ func (h *userServiceHandler) Get(ctx context.Context, in *User, out *Response) e
 
 func (h *userServiceHandler) GetAll(ctx context.Context, in *Request, out *Response) error {
 	return h.UserServiceHandler.GetAll(ctx, in, out)
+}
+
+func (h *userServiceHandler) Auth(ctx context.Context, in *User, out *Token) error {
+	return h.UserServiceHandler.Auth(ctx, in, out)
+}
+
+func (h *userServiceHandler) ValidateToken(ctx context.Context, in *Token, out *Token) error {
+	return h.UserServiceHandler.ValidateToken(ctx, in, out)
 }

@@ -30,7 +30,7 @@ func main() {
 	)
 
 	// 远程服务客户端调用句柄
-	client := pb.NewUserServiceClient("laracom.user.service", service.Client())
+	client := pb.NewUserService("laracom.user.service", service.Client())
 
 	// 运行客户端命令调用远程服务逻辑设置
 	service.Init(
@@ -40,6 +40,24 @@ func main() {
 			password := c.String("password")
 
 			log.Println("参数:", name, email, password)
+
+			// 调用用户认证服务
+			var token *pb.Token
+			token, err = client.Auth(context.TODO(), &pb.User{
+				Email:    email,
+				Password: password,
+			})
+			if err != nil {
+				log.Fatalf("用户登录失败: %v", err)
+			}
+			log.Printf("用户登录成功：%s", token.Token)
+
+			// 调用用户验证服务
+			token, err = client.ValidateToken(context.TODO(), token)
+			if err != nil {
+				log.Fatalf("用户认证失败: %v", err)
+			}
+			log.Printf("用户认证成功：%s", token.Valid)
 
 			// 调用用户服务
 			r, err := client.Create(context.TODO(), &pb.User{
