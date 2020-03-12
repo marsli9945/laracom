@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"github.com/jinzhu/gorm"
 	pb "github.com/marsli9945/laracom/user-service/proto/user"
 	"github.com/marsli9945/laracom/user-service/repo"
 	"github.com/marsli9945/laracom/user-service/service"
@@ -16,8 +17,14 @@ type UserService struct {
 }
 
 func (srv *UserService) Get(ctx context.Context, req *pb.User, res *pb.Response) error {
-	user, err := srv.Repo.Get(req.Id)
-	if err != nil {
+	var user *pb.User
+	var err error
+	if req.Id != "" {
+		user, err = srv.Repo.Get(req.Id)
+	} else if req.Email != "" {
+		user, err = srv.Repo.GetByEmail(req.Email)
+	}
+	if err != nil && err != gorm.ErrRecordNotFound {
 		return err
 	}
 	res.User = user
