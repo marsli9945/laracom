@@ -4,7 +4,8 @@ import (
 	"fmt"
 	database "github.com/marsli9945/laracom/user-service/db"
 	"github.com/marsli9945/laracom/user-service/handler"
-	pb "github.com/marsli9945/laracom/user-service/model"
+	"github.com/marsli9945/laracom/user-service/model"
+	pb "github.com/marsli9945/laracom/user-service/proto/user"
 	repository "github.com/marsli9945/laracom/user-service/repo"
 	"github.com/marsli9945/laracom/user-service/service"
 	"github.com/micro/go-micro"
@@ -23,8 +24,8 @@ func main() {
 
 	// 和 Laravel 数据库迁移类似
 	// 每次启动服务时都会检查，如果数据表不存在则创建，已存在检查是否有修改
-	db.AutoMigrate(&pb.User{})
-	db.AutoMigrate(&pb.PasswordReset{})
+	db.AutoMigrate(&model.User{})
+	db.AutoMigrate(&model.PasswordReset{})
 
 	// 初始化 Repo 实例用于后续数据库操作
 	repo := &repository.UserRepository{db}
