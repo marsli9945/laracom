@@ -2,7 +2,7 @@ package service
 
 import (
 	"github.com/dgrijalva/jwt-go"
-	pb "github.com/marsli9945/laracom/user-service/proto/user"
+	pb "github.com/marsli9945/laracom/user-service/model"
 	"github.com/marsli9945/laracom/user-service/repo"
 	"time"
 )

@@ -2,14 +2,15 @@ package repo
 
 import (
 	"github.com/jinzhu/gorm"
-	pb "github.com/marsli9945/laracom/user-service/proto/user"
+	pb "github.com/marsli9945/laracom/user-service/model"
 )
 
 type Repository interface {
 	Create(user *pb.User) error
-	Get(id string) (*pb.User, error)
+	Get(id uint) (*pb.User, error)
 	GetByEmail(email string) (*pb.User, error)
 	GetAll() ([]*pb.User, error)
+	Update(user *pb.User) error
 }
 
 type UserRepository struct {
@@ -23,9 +24,9 @@ func (repo *UserRepository) Create(user *pb.User) error {
 	return nil
 }
 
-func (repo *UserRepository) Get(id string) (*pb.User, error) {
+func (repo *UserRepository) Get(id uint) (*pb.User, error) {
 	user := &pb.User{}
-	user.Id = id
+	user.ID = id
 	if err := repo.Db.First(&user).Error; err != nil {
 		return nil, err
 	}
@@ -47,4 +48,11 @@ func (repo *UserRepository) GetAll() ([]*pb.User, error) {
 		return nil, err
 	}
 	return users, nil
+}
+
+func (repo *UserRepository) Update(user *pb.User) error {
+	if err := repo.Db.Save(user).Error; err != nil {
+		return err
+	}
+	return nil
 }
