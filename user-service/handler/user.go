@@ -1,22 +1,27 @@
 package handler
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/jinzhu/gorm"
 	"github.com/marsli9945/laracom/user-service/model"
 	pb "github.com/marsli9945/laracom/user-service/proto/user"
 	"github.com/marsli9945/laracom/user-service/repo"
 	"github.com/marsli9945/laracom/user-service/service"
+	"github.com/micro/go-micro/broker"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/net/context"
 	"log"
 	"strconv"
 )
 
+const topic = "password.reset"
+
 type UserService struct {
 	Repo      repo.Repository
 	ResetRepo repo.PasswordResetInterface
 	Token     service.Authable
+	PubSub    broker.Broker
 }
 
 func (srv *UserService) Get(ctx context.Context, req *pb.User, res *pb.Response) error {
@@ -135,11 +140,37 @@ func (srv *UserService) CreatePasswordReset(ctx context.Context, req *pb.Passwor
 	}
 	resetModel := new(model.PasswordReset)
 	passwordReset, _ := resetModel.ToORM(req)
+	if passwordReset != nil {
+		res.PasswordReset, _ = passwordReset.ToProtobuf()
+		if err := srv.publishEvent(res.PasswordReset); err != nil {
+			return err
+		}
+	}
 	if err := srv.ResetRepo.Create(passwordReset); err != nil {
 		return err
 	}
 	if passwordReset != nil {
 		res.PasswordReset, _ = passwordReset.ToProtobuf()
+	}
+	return nil
+}
+
+func (srv *UserService) publishEvent(reset *pb.PasswordReset) error {
+	// JSON 编码
+	body, err := json.Marshal(reset)
+	if err != nil {
+		return err
+	}
+	// 构建 broker 消息
+	msg := &broker.Message{
+		Header: map[string]string{
+			"email": reset.Email,
+		},
+		Body: body,
+	}
+	// 通过 broker 发布消息到消息系统
+	if err := srv.PubSub.Publish(topic, msg); err != nil {
+		log.Printf("[pub] failed: %v", err)
 	}
 	return nil
 }
